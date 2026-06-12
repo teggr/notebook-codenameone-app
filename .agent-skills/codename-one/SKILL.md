@@ -1,0 +1,319 @@
+---
+name: codename-one
+description: Build and modify Codename One cross-platform mobile apps (Java 17, Maven, ParparVM/Android/iOS/JavaScript). Use when the project contains a `common/codenameone_settings.properties`, depends on `com.codenameone:codenameone-core`, edits CSS files under `common/src/main/css/`, calls `cn1:run`, `cn1:test`, `cn1:build`, references `com.codename1.ui.*` / `com.codename1.testing.*`, or when the user asks to build a UI, write screen tests, generate screenshots, or compare to Swing/HTML.
+metadata:
+  type: skill
+---
+
+# Codename One — App and UI Authoring Skill
+
+This skill teaches you how to write code for a Codename One (CN1) cross-platform mobile project. Codename One compiles Java/Kotlin bytecode to native iOS, Android, desktop and web. It looks like Java AWT/Swing, behaves like a mobile UI toolkit, and styles with a subset of CSS.
+
+**Use this skill when**:
+
+- A file you are editing imports `com.codename1.ui.*`, `com.codename1.io.*`, `com.codename1.testing.*`, or extends `com.codename1.system.Lifecycle`.
+- You are editing a file in `common/src/main/css/` (CN1 CSS).
+- You are running `cn1:run`, `cn1:debug`, `cn1:test`, or `cn1:build` Maven goals.
+- The user asks for a UI screen, a screenshot test, a responsive layout, or wants to convert a Swing/HTML snippet to CN1.
+
+## How this skill is organized
+
+`SKILL.md` (this file) is the top-level cheat sheet. Deeper reference material lives under `references/` — pull the relevant file in **only when you need it**:
+
+- `references/build-and-run.md` — Local vs cloud builds, JDK matrix, Maven goals, `codenameone_settings.properties`, running the simulator, building for iOS/Android/Web, automated (Enterprise) cloud builds in CI.
+- `references/build-hints.md` — Curated index of `codename1.arg.*` build hints (iOS, Android, push, web).
+- `references/java-api-subset.md` — How to inspect the supported Java API subset, IO (`Storage`, `FileSystemStorage`), networking (`ConnectionRequest`, `Rest`), OAuth/OpenID Connect (`OidcClient`), WebSockets (cn1lib), concurrency, dates, SQLite. **Read this whenever the compliance check fails or when you reach for a `java.*` API.**
+- `references/api-clients.md` — The three "spec to typed client" code generators that share one architecture: REST/OpenAPI (`cn1:generate-openapi` + `@RestClient`), gRPC (`cn1:generate-grpc` + `@GrpcClient`), and GraphQL (`cn1:generate-graphql` + `@GraphQLClient`). Read this when the backend has an OpenAPI spec, a `.proto`, or a GraphQL schema and you want a generated, annotated client instead of hand-rolling calls.
+- `references/ui-components.md` — Form, Toolbar, Container layouts (Border/Box/Flow/Grid/Layered), common components, navigation, dialogs.
+- `references/binding-and-validation.md` — `@Bindable` / `@Bind` annotation binding **and** annotation-driven validation (`@Required`, `@Length`, `@Regex`, `@Email`, `@Url`, `@Numeric`, `@ExistIn`, `@Validate`). Read this whenever you see one of those annotations, wire a model to a form, or need to gate a submit button on validation.
+- `references/css.md` — CSS capabilities and (important) **limitations**. Selectors, supported properties, 9-patch borders, theme constants, and the build-time vector transcoder that compiles SVG and Lottie / Bodymovin JSON referenced via `url(...)` into `GeneratedSVGImage` subclasses.
+- `references/swing-comparison.md` — Mapping Swing concepts and code to Codename One. Read this when porting Swing code.
+- `references/html-css-cheatsheet.md` — Converting common HTML/CSS snippets to CN1 components + CSS.
+- `references/android-to-cn1.md` — Porting Android (XML + Kotlin/Java) screens to Codename One.
+- `references/react-to-cn1.md` — Bringing a **React / JSX + CSS design** (e.g. a Claude-generated bundle: `*.jsx` + `tokens.css` + `styles.css`) into Codename One: the component/hook/CSS mapping, the `tokens.css` -> `theme.css` token workflow, dark-mode re-skinning, and the **render-on-desktop-then-inspect** loop. Read this when the user hands you a React/HTML design to rebuild in CN1.
+- `references/testing-and-screenshots.md` — `AbstractTest`, `TestUtils`, `screenshotTest`, the `cn1:test` Maven goal, the screenshot tolerance algorithm.
+- `references/mockup-comparison.md` — Building a screen to **match a designer mockup**: `tools/CompareToMockup.java` scores a render against a mockup image and prints a similarity % (with partial/region masking so device chrome doesn't sabotage the score), and `tools/DesignImport.java` turns a Figma/Sketch/Adobe XD file **or an HTML/React design's `tokens.css`/`styles.css`** (e.g. a Claude-generated mockup) into a starter `theme.css` + tokens + layout map. Read this when the user gives you a mockup, a Figma/Sketch/XD file, an HTML/CSS design bundle, or asks "how close is this screen to the design".
+- `references/junit-testing.md` — Standard JUnit 5 tests against the simulator via `@CodenameOneTest`. Annotations (`@RunOnEdt`, `@Theme`, `@DarkMode`, `@LargerText`, `@Orientation`, `@RTL`, `@SimulatorProperty`), how it coexists with `cn1:test`, and why a headless CI runner has to be configured with Xvfb (or accepts that JUnit test classes will be skipped).
+- `references/mobile-adaptability.md` — Density-independent units (mm), `convertToPixels`, `LayeredLayout` for responsive design, `Display.isTablet()`, font scaling.
+- `references/native-interfaces.md` — Authoring native interfaces for iOS/Android/JavaScript/Desktop with `cn1:generate-native-interfaces` and platform callbacks.
+- `references/cn1libs.md` — Creating, packaging, and consuming Codename One libraries (Maven and legacy `.cn1lib`).
+- `references/ai-and-speech.md` — LLM client (`com.codename1.ai`), `ChatView`, `SpeechRecognizer`, `TextToSpeech`, non-prompting `SecureStorage` overloads, the ML Kit cn1libs, and the simulator's offline Ollama redirect. Read this when the user asks for chat, voice, embeddings, image generation, barcode/document/face detection, or wants to store an LLM API key.
+- `references/printing.md` — Cross-platform printing (`com.codename1.printing`): `Printer.printPDF` / `printImage` / `print`, the `PrintResult` outcome, and per-platform caveats (iOS AirPrint, Android, desktop, native Windows, web). Read this when the user wants to print a document, report, image, or the current screen.
+- `references/games.md` — Game development (`com.codename1.gaming`): the `GameView` update loop, `Sprite` / `AnimatedSprite` / `SpriteSheet`, pollable `GameInput`, `TouchControls`, `SoundPool`, and 2D `com.codename1.gaming.physics` (Box2D). Read this for arcade/casual/scroller/board games or any real-time animated canvas.
+- `references/3d-graphics.md` — Portable GPU 3D (`com.codename1.gpu`): the `RenderView` + `Renderer` loop, declarative `Material` / `VertexFormat` (engine-generated shaders — no GLSL), `Primitives`, `GltfLoader` for glTF models, `Camera` / `Light` / `Matrix4`, and platform backends. Read this for product viewers, 3D scenes, or custom GPU rendering.
+- `references/snapshot-builds.md` — Edge case: compiling against a Codename One SNAPSHOT from git.
+- `references/debugging.md` — `jdb`-attach workflow for an agent: start the simulator paused, set breakpoints, dump locals, drive the session non-interactively from a script.
+- `tools/` — runnable Java 17 single-file utilities. `tools/IsApiSupported.java` answers "is this `java.*` class in the CN1 subset?"; `tools/IsCssValid.java` answers "does this `theme.css` compile?"; `tools/CompareToMockup.java` scores a rendered screenshot against a designer mockup (similarity %, with region masking); `tools/DesignImport.java` turns a Figma/Sketch/Adobe XD design — or an HTML/React design's `tokens.css`/`styles.css` (Claude-generated mockups) — into starter CN1 CSS + tokens + a layout map. **`tools/DumpForm.java`** boots the app in **desktop mode** and dumps a model of the current screen, which **`tools/DescribeForm.java`** (vision-free outline), **`tools/AlignmentCheck.java`** (designer alignment guides) and **`tools/GuiLint.java`** (nested scroll, opaque text/containers, image borders) analyse. **`tools/UpdateSkills.java`** self-updates this whole skill from GitHub. Run with `java tools/<Name>.java <args>`.
+
+When the user's task hits any one of those topics, **read the matching reference before generating code**. Do not paste large snippets without checking.
+
+## Project layout (multi-module Maven)
+
+A CN1 project generated by the initializr has these modules:
+
+```
+my-app/
+├── pom.xml                       # Aggregator. cn1.plugin.version + cn1.version pinned here.
+├── common/                       # Cross-platform Java/Kotlin source. THIS IS WHERE THE APP LIVES.
+│   ├── pom.xml                   # <source>17</source> <target>17</target> by default
+│   ├── codenameone_settings.properties
+│   └── src/main/
+│       ├── java/<pkg>/<MainClass>.java
+│       ├── css/theme.css         # CN1 CSS (NOT regular web CSS - see references/css.md)
+│       ├── l10n/                 # i18n bundles (NOT src/main/resources!)
+│       └── guibuilder/           # Optional GUI builder XML
+├── javase/                       # Desktop simulator port
+├── android/                      # Android wrapper (built via build server or local Gradle)
+├── ios/                          # iOS wrapper (ParparVM)
+└── javascript/                   # TeaVM-based web port
+```
+
+**Only edit `common/`**. The platform modules are thin wrappers — touching them is almost always wrong unless you are intentionally writing a native interface.
+
+## Java version and language features
+
+This project targets **Java 17** (`<source>17</source>` / `<target>17</target>` in `common/pom.xml`, plus `codename1.arg.java.version=17` in `codenameone_settings.properties`). Use:
+
+- `var` for local variable type inference
+- Text blocks (`"""..."""`)
+- Records
+- Pattern matching for `instanceof`
+- `switch` expressions
+- Lambdas, method references, `Stream`s
+
+**Caveat — the build server cross-compiles to bytecode that ParparVM/TeaVM can consume.** Codename One ships a curated subset of the JDK, **not** the full `java.*` namespace. The `cn1:bytecode-compliance` Maven goal runs on every compile and fails the build if you call an unsupported API. The most common gotchas:
+
+- No `java.nio.file.*` — use `com.codename1.io.FileSystemStorage` and `Storage`.
+- No `java.net.http.*` / `java.net.URLConnection` — use `com.codename1.io.rest.Rest` (preferred) or `ConnectionRequest`.
+- No `java.util.concurrent.locks.*` beyond simple `synchronized` — use `Display.getInstance().callSerially(...)` or `Display.startThread(...)`.
+- No `java.awt.*` / `javax.swing.*` — CN1 has its own UI stack. See `references/swing-comparison.md`.
+- No `java.lang.reflect.*` on production builds — works in the simulator only.
+- No threads spawned with `new Thread(...).start()` for UI work — always go through `Display.callSerially` or `Display.startThread(...)`.
+
+For the authoritative subset list and IO/networking patterns, read `references/java-api-subset.md` (which also shows how to grep the `java-runtime` jar to verify any specific class/method).
+
+## The Event Dispatch Thread (EDT)
+
+CN1 has a single EDT, exactly like Swing. All UI mutation **must** happen on it.
+
+- Inside event listeners and lifecycle callbacks (`start`, `stop`, `init`) you are already on the EDT.
+- From a background thread, hop back with `Display.getInstance().callSerially(() -> { ... })` (or `callSeriallyAndWait` if you need to block).
+- Use `Display.getInstance().startThread(runnable, "name").start()` instead of `new Thread(...)` so cleanup happens correctly across platforms.
+
+`references/swing-comparison.md` contains a Swing→CN1 EDT idiom table.
+
+## The Lifecycle main class
+
+Every CN1 app extends `com.codename1.system.Lifecycle` (or `com.codename1.ui.util.Lifecycle` in older code). The four methods you may override:
+
+```java
+public class NotebookCodenameOneApp extends Lifecycle {
+    @Override
+    public void init(Object context) {
+        // Called once on the EDT. The Lifecycle base class already installs
+        // the theme; reach for the cached global resources instance from
+        // here on (Resources.getGlobalResources() returns the in-RAM copy,
+        // no disk re-read).
+    }
+
+    @Override
+    public void runApp() {
+        // Build and show the first form.
+        Form f = new Form("Hello", new BorderLayout());
+        f.add(BorderLayout.CENTER, new Label("Welcome"));
+        f.show();
+    }
+
+    @Override
+    public void stop() { /* App backgrounded */ }
+
+    @Override
+    public void destroy() { /* App killed */ }
+}
+```
+
+## Minimal "first screen" pattern
+
+```java
+import static com.codename1.ui.CN.*;       // Convenience statics: callSerially, etc.
+import com.codename1.ui.*;
+import com.codename1.ui.layouts.*;
+
+Form f = new Form("Profile", BoxLayout.y());
+f.getToolbar().addCommandToRightBar("Save", null, e -> save());
+f.add(new Label("Name"))
+ .add(new TextField())
+ .add(new Button("Submit"));
+f.show();
+```
+
+`BoxLayout.y()` (vertical) and `BoxLayout.x()` (horizontal) are the most common layouts. Wrap a `Form` content pane in `BorderLayout` when you want a header/footer/center split. See `references/ui-components.md` for the full layout matrix.
+
+## CSS in Codename One
+
+CN1 ships with a CSS compiler that bakes `common/src/main/css/theme.css` into the binary theme resource (`theme.res`). It supports a deliberate **subset** of web CSS:
+
+```css
+Form {
+    background-color: #0f172a;        /* hex, rgb(), or named colors */
+    padding: 2mm;                     /* mm is the recommended unit */
+}
+
+Button {
+    background-color: #1d4ed8;
+    color: #ffffff;
+    border: 1px solid #1d4ed8;
+    border-radius: 3mm;
+    padding: 2mm 4mm;
+}
+
+Button.pressed {                      /* state pseudo-class baked as UIID */
+    background-color: #1e3a8a;
+}
+
+#Constants {
+    useLargerTextScaleBool: true;     /* theme constants, not standard CSS */
+}
+```
+
+**Key differences from web CSS** (read `references/css.md` before authoring more):
+
+- Selectors target **UIIDs** (Codename One component style names), not arbitrary HTML elements. `Button`, `Form`, `Label`, `Toolbar`, `Title` are the most common.
+- No descendant combinator, no `:hover`, no media queries. State variants are baked: `.pressed`, `.disabled`, `.selected`.
+- Units: prefer `mm` (millimeters) over `px`. CN1 converts `mm` to device pixels via `Display.convertToPixels`. `1mm` ≈ 6-9 px depending on density.
+- `border-radius` works but is rasterized at compile time — animating it at runtime requires programmatic styling.
+- No `transform`, no `flex`, no `grid`. Use CN1 Java layouts for arrangement; CSS is only for *styling*.
+- Bundled named colors are limited: `pink`, `orange`, `purple`, `yellow`, `gray`/`grey` are translated to hex by the initializr, anything else you must specify as hex.
+
+`references/html-css-cheatsheet.md` shows how to map "I want a flexbox row" / "I want a hero section" / "I want a card" to CN1 idioms.
+
+## Adaptability and responsive design
+
+Mobile screens vary wildly. CN1 gives you:
+
+- **Density-independent units**: `1mm` always renders ~1mm tall regardless of pixel density. Always size in `mm`, not `px`.
+- `Display.getInstance().convertToPixels(2.5f)` — convert millimeters to current device pixels programmatically.
+- `Display.getInstance().isTablet()`, `Display.getInstance().isPortrait()`, `Display.getInstance().getDisplayWidth/Height()` — branch on form factor.
+- `LayeredLayout` with `LayeredLayoutConstraint` for precise responsive positioning (percent-based insets).
+- `Toolbar` automatically reshapes to platform conventions (Android side menu / iOS tab bar).
+
+See `references/mobile-adaptability.md` for patterns: phone-vs-tablet master-detail, orientation listeners, dynamic font scaling.
+
+## Testing
+
+CN1 supports two compatible test styles in the same project:
+
+1. **Legacy `AbstractTest` + `cn1:test`.** Required for tests that must also run on a device (`mvn cn1:test -Dtarget=ios`). Compiles under the device subset (no reflection, no JavaSE APIs). See `references/testing-and-screenshots.md`.
+2. **Standard JUnit 5 + `@CodenameOneTest`.** Runs only in the simulator JVM via Surefire, so you get reflection, Mockito, AssertJ, IDE green-bar integration, `-Dtest=Foo#bar` filtering. Faster startup. See `references/junit-testing.md`.
+
+Both runners coexist — `cn1:test` discovers `UnitTest` implementers, Surefire discovers `@Test` methods, they don't trip over each other. Pick per test class.
+
+```java
+// Legacy AbstractTest -- compiles under the device subset, runs via `cn1:test`.
+public class LoginFormTest extends AbstractTest {
+    @Override public boolean shouldExecuteOnEDT() { return true; }
+    @Override public boolean runTest() throws Exception {
+        new NotebookCodenameOneApp().runApp();
+        TestUtils.waitForFormTitle("Login");
+        TestUtils.setText("usernameField", "alice");
+        TestUtils.clickButtonByLabel("Sign In");
+        TestUtils.waitForFormTitle("Home");
+        return screenshotTest("home-screen-baseline");
+    }
+}
+
+// JUnit 5 -- simulator-only, runs via `mvn test` / Surefire.
+@CodenameOneTest
+class GreetingFormTest {
+    @Test
+    @RunOnEdt
+    void formShowsExpectedTitle() {
+        new Form("Hello").show();
+        assertEquals("Hello", Display.getInstance().getCurrent().getTitle());
+    }
+}
+```
+
+Run with `mvn -pl common cn1:test` (cn1:test runner only) or `mvn test` (both runners). The cn1app archetype already wires up Surefire + JUnit Jupiter in the generated POMs.
+
+`screenshotTest(name)` captures the current form, compares against a stored baseline under `Storage`, and returns `true` if within tolerance. First run records the baseline. See `references/testing-and-screenshots.md` for the tolerance algorithm and how to validate UI you just wrote.
+
+> Important: a "screenshot matches baseline" only proves consistency, **not** correctness. If you just generated the baseline yourself, you have not validated the screen — visually inspect at least once before treating that baseline as ground truth.
+
+> Headless caveat: any simulator-driven test (both flavors) needs an X server / Xvfb to construct the simulator's `JFrame`. The `@CodenameOneTest` extension auto-aborts the class on a headless JVM so you get "skipped" instead of "errored"; the `cn1:test` runner needs you to skip with `-DskipTests` or run under `xvfb-run`.
+
+## Build and run commands
+
+From the project root:
+
+```bash
+# Run in the desktop simulator (requires JDK 11–25 at runtime; build still uses JDK 17 source level)
+mvn -pl common cn1:run
+
+# Run with breakpoints
+mvn -pl common cn1:debug
+
+# Execute the CN1 test runner
+mvn -pl common cn1:test
+
+# Cloud build for Android/iOS/JS (requires CN1 build server creds)
+mvn -pl android package -Dcodename1.platform=android -Dcodename1.buildTarget=android-device
+mvn -pl ios     package -Dcodename1.platform=ios     -Dcodename1.buildTarget=ios-device
+mvn -pl javascript package -Dcodename1.platform=javascript -Dcodename1.buildTarget=javascript
+```
+
+See `references/build-and-run.md` for the local-vs-cloud matrix, automated-build mode (Enterprise), iOS local-build prerequisites, and the complete goal list. The full `codename1.arg.*` index lives in `references/build-hints.md`.
+
+## What NOT to do
+
+- Don't use `java.awt.Color` / `java.awt.Font` / `javax.swing.*` — CN1 has its own `Color` constants (just `int` ARGB), `Font.createTrueTypeFont`, and `Component` hierarchy.
+- Don't add CSS that references web-only properties (`display`, `flex`, `position`, `transform`, `@media`) — the CN1 CSS compiler will silently ignore them or fail.
+- Don't put localization bundles under `common/src/main/resources/`. The CN1 plugin scans `common/src/main/l10n/` (or `common/src/main/i18n/`); bundles placed anywhere else are NOT baked into `theme.res` and `Resources.getL10N("messages", lang)` returns `null` at runtime.
+- Don't spin up `new Thread(...)` for UI work — use `Display.getInstance().callSerially(...)` or `Display.startThread(...)`.
+- Don't mutate UI off the EDT. Symptoms: random repaint glitches, native crashes on iOS.
+- Don't write screenshot tests where the baseline was just generated by the same code you are validating — that proves nothing.
+
+## Sanity-check loop before reporting "done"
+
+For any UI-altering change:
+
+1. Run `mvn -pl common cn1:run` in the simulator and click through the changed flow.
+2. Inspect at least one screenshot (capture via the simulator menu → Save Screenshot, or generate via a test).
+3. Resize the simulator window or toggle a different skin to confirm the layout doesn't break on a different form factor.
+4. If you wrote a `screenshotTest`, delete the auto-generated baseline once if the screen has changed, then re-run twice — the second run should pass with `true`.
+
+If you cannot run the simulator (e.g. headless environment), **say so explicitly in the response** rather than claiming the UI works.
+
+## Reference quick-look index
+
+| If the user asks for... | Open this reference |
+| --- | --- |
+| "Add a screen with a list / form / dialog" | `references/ui-components.md` |
+| "Wire this form to a model" / "Validate this form" / `@Bindable`, `@Required`, `@Email`, ... | `references/binding-and-validation.md` |
+| "Make this look like X" / CSS tweaks | `references/css.md` |
+| "Port this from Swing" / Swing idioms | `references/swing-comparison.md` |
+| "I have HTML/CSS, convert it" | `references/html-css-cheatsheet.md` |
+| "I have a React/JSX design (jsx + tokens.css), rebuild it in CN1" / "match this Claude design" | `references/react-to-cn1.md` |
+| "I have Android XML/Kotlin/Java, convert it" | `references/android-to-cn1.md` |
+| "Generate a client for this OpenAPI spec / `.proto` / GraphQL schema" / `@RestClient`, `@GrpcClient`, `@GraphQLClient` | `references/api-clients.md` |
+| "Write a test for this screen" / "Compare to a baseline" | `references/testing-and-screenshots.md` |
+| "Match this mockup" / "Compare to a Figma/Sketch/XD design" / "Import this HTML/CSS (Claude) design's tokens" / "How close is this screen to the design" | `references/mockup-comparison.md` |
+| "Make it look right on tablet/landscape" | `references/mobile-adaptability.md` |
+| "How do I run/build/deploy" | `references/build-and-run.md` |
+| "What's the right `codename1.arg.*` for X" / native config | `references/build-hints.md` |
+| "Why does the compliance check fail" / Java/IO/networking | `references/java-api-subset.md` |
+| "I need to call a native iOS/Android/JS/desktop API" | `references/native-interfaces.md` |
+| "How do I create / consume a cn1lib" | `references/cn1libs.md` |
+| "Add a chatbot" / "Integrate OpenAI/Ollama/Anthropic" / "Stream LLM tokens" / "Generate an image" / "Embed text" | `references/ai-and-speech.md` |
+| "Read voice input" / "Speak text aloud" / "Add a voice button to my chat" | `references/ai-and-speech.md` |
+| "Print a document / report / image" / "print the current screen" / AirPrint | `references/printing.md` |
+| "Build a game" / sprites, game loop, joystick, collisions / `GameView` | `references/games.md` |
+| "Render 3D" / "show a 3D model" / glTF / `RenderView` / custom GPU drawing | `references/3d-graphics.md` |
+| "Scan a barcode" / "Detect a face" / "Crop a document photo" via ML Kit | `references/ai-and-speech.md` |
+| "Store an LLM API key" / non-prompting SecureStorage | `references/ai-and-speech.md` |
+| "Build against a Codename One SNAPSHOT from git" | `references/snapshot-builds.md` |
+| "Debug a faulty screen — attach `jdb` to the simulator" | `references/debugging.md` |
+| Quick yes/no check: "is this `java.*` class supported", "does my `theme.css` compile" | `tools/` directory — `java tools/IsApiSupported.java <class>` / `java tools/IsCssValid.java <file>` |
+| "Score this screen against a mockup" / "Import a Figma/Sketch/XD design" | `tools/` directory — `java tools/CompareToMockup.java <render> <mockup>` / `java tools/DesignImport.java <design>` (see `references/mockup-comparison.md`) |
+| "Describe this screen" / "are these elements aligned" / "lint this UI for bugs" | `tools/` — `java -cp <cp> tools/DumpForm.java <MainClass>` then `tools/DescribeForm.java` / `tools/AlignmentCheck.java` / `tools/GuiLint.java` on the model (see `references/mockup-comparison.md`) |
+| "Update / refresh the Codename One skill to the latest" | `tools/` — `java tools/UpdateSkills.java [--dry-run]` |
