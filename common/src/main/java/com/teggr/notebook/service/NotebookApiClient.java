@@ -43,14 +43,14 @@ public class NotebookApiClient {
     }
 
     public NoteDetail createNote(String content) throws IOException {
-        String body = "{\"content\":\"" + escapeJson(defaultContent(content)) + "\"}";
+        String body = buildNoteWriteBody(content);
         String json = sendJson("POST", "/api/notes", body, false);
         Map map = parseObject(json);
         return NotebookApiMapper.toNoteDetail(map);
     }
 
     public NoteDetail updateNote(String id, String content) throws IOException {
-        String body = "{\"content\":\"" + escapeJson(defaultContent(content)) + "\"}";
+        String body = buildNoteWriteBody(content);
         String json = sendJson("PUT", "/api/notes/" + encodePath(id), body, false);
         Map map = parseObject(json);
         return NotebookApiMapper.toNoteDetail(map);
@@ -97,6 +97,7 @@ public class NotebookApiClient {
         req.setUrl(baseUrl + path);
         req.setTimeout(15000);
         if (jsonBody != null) {
+            req.setWriteRequest(true);
             req.setContentType("application/json");
             req.setRequestBody(jsonBody);
         }
@@ -145,6 +146,34 @@ public class NotebookApiClient {
             return "# Untitled\n\n";
         }
         return value;
+    }
+
+    static String buildNoteWriteBody(String content) {
+        String normalizedContent = defaultContent(content);
+        String title = deriveTitle(normalizedContent);
+        return "{\"title\":\"" + escapeJson(title)
+                + "\",\"content\":\"" + escapeJson(normalizedContent) + "\"}";
+    }
+
+    static String deriveTitle(String content) {
+        String text = defaultContent(content).trim();
+        if (text.length() == 0) {
+            return "Untitled";
+        }
+
+        List<String> lines = StringUtil.tokenize(text, "\n");
+        for (String line : lines) {
+            String trimmed = line == null ? "" : line.trim();
+            if (trimmed.length() == 0) {
+                continue;
+            }
+            if (trimmed.startsWith("#")) {
+                String withoutHeading = trimmed.replaceFirst("^#+\\s*", "").trim();
+                return withoutHeading.length() == 0 ? "Untitled" : withoutHeading;
+            }
+            return trimmed;
+        }
+        return "Untitled";
     }
 
     private static String escapeJson(String value) {

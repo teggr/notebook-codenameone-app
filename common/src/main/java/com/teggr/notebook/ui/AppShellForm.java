@@ -5,14 +5,12 @@ import static com.codename1.ui.CN.callSerially;
 import com.codename1.components.InfiniteProgress;
 import com.codename1.l10n.L10NManager;
 import com.codename1.ui.Button;
-import com.codename1.ui.Component;
 import com.codename1.ui.Container;
 import com.codename1.ui.Dialog;
 import com.codename1.ui.Display;
 import com.codename1.ui.FontImage;
 import com.codename1.ui.Form;
 import com.codename1.ui.Label;
-import com.codename1.ui.Tabs;
 import com.codename1.ui.TextField;
 import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
@@ -30,10 +28,17 @@ import java.util.Date;
 import java.util.List;
 
 public class AppShellForm extends Form {
+    private static final int SECTION_NOTES = 0;
+    private static final int SECTION_SEARCH = 1;
+    private static final int SECTION_SETTINGS = 2;
+
     private final NotebookApiClient api;
     private final NotebookUiState uiState = new NotebookUiState();
 
-    private final Tabs tabs;
+    private final Container contentHost;
+    private final Container notesView;
+    private final Container searchView;
+    private final Container settingsView;
     private final Container notesList;
     private final Label notesStatus;
     private final Label syncHint;
@@ -55,16 +60,13 @@ public class AppShellForm extends Form {
     private final List<NoteSummary> currentNotes = new ArrayList<NoteSummary>();
     private boolean notesRefreshInFlight;
     private boolean syncingSearchFields;
+    private int selectedSection = SECTION_NOTES;
     private UITimer searchDebounceTimer;
 
     public AppShellForm(NotebookApiClient api) {
         super("All Notes", new BorderLayout());
         this.api = api;
         getToolbar().setTitleCentered(true);
-
-        tabs = new Tabs();
-        tabs.setTabPlacement(Component.BOTTOM);
-        tabs.setUIID("NotebookTabs");
 
         notesList = BoxLayout.encloseY();
         notesList.setUIID("NotebookSection");
@@ -78,7 +80,7 @@ public class AppShellForm extends Form {
         notesRetryButton.addActionListener(e -> loadNotes());
         notesSearchField = new TextField("", "Search notes or tags", 24, TextField.ANY);
         notesSearchField.setUIID("NotebookSearchField");
-        Container notesTab = buildNotesTab();
+        notesView = buildNotesTab();
 
         searchField = new TextField("", "Search notes or tags", 24, TextField.ANY);
         searchField.setUIID("NotebookSearchField");
@@ -94,7 +96,7 @@ public class AppShellForm extends Form {
         searchRetryButton.setUIID("SecondaryActionButton");
         searchRetryButton.setVisible(false);
         searchRetryButton.addActionListener(e -> runSearch(uiState.getLastSearchQuery(), false));
-        Container searchTab = buildSearchTab();
+        searchView = buildSearchTab();
 
         remoteUrlField = new TextField("", "https://github.com/user/repo.git", 30, TextField.URL);
         remoteUrlField.setUIID("NotebookTextField");
@@ -108,26 +110,11 @@ public class AppShellForm extends Form {
         settingsRetryButton.setUIID("SecondaryActionButton");
         settingsRetryButton.setVisible(false);
         settingsRetryButton.addActionListener(e -> loadSettings());
-        Container settingsTab = buildSettingsTab();
+        settingsView = buildSettingsTab();
 
-        tabs.addTab("Notes", notesTab);
-        tabs.addTab("Search", searchTab);
-        tabs.addTab("Settings", settingsTab);
-
-        tabs.addSelectionListener((oldSelected, selected) -> {
-            applyShellTitle(selected);
-            if (selected == 0 && uiState.isNotesStale()) {
-                loadNotes();
-            }
-            if (selected == 1 && uiState.isSearchStale() && uiState.hasSearchQuery()) {
-                runSearch(uiState.getLastSearchQuery(), true);
-            }
-            if (selected == 2) {
-                loadSettings();
-            }
-        });
-
-        add(BorderLayout.CENTER, tabs);
+        contentHost = new Container(new BorderLayout());
+        contentHost.add(BorderLayout.CENTER, notesView);
+        add(BorderLayout.CENTER, contentHost);
 
         installToolbarCommands();
         wireSearchInteractions();
@@ -137,11 +124,12 @@ public class AppShellForm extends Form {
     }
 
     private void installToolbarCommands() {
-        getToolbar().addMaterialCommandToLeftBar("", FontImage.MATERIAL_MENU, e ->
-                Dialog.show("Notebook", "Use the tabs below to switch sections.", "OK", null));
+        getToolbar().addMaterialCommandToSideMenu("Notes", FontImage.MATERIAL_LIST, e -> switchSection(SECTION_NOTES));
+        getToolbar().addMaterialCommandToSideMenu("Search", FontImage.MATERIAL_SEARCH, e -> switchSection(SECTION_SEARCH));
+        getToolbar().addMaterialCommandToSideMenu("Settings", FontImage.MATERIAL_SETTINGS, e -> switchSection(SECTION_SETTINGS));
         getToolbar().addMaterialCommandToRightBar("", FontImage.MATERIAL_CREATE, e -> openEditor(null));
         getToolbar().addMaterialCommandToRightBar("", FontImage.MATERIAL_SYNC, e -> syncNow());
-        applyShellTitle(tabs.getSelectedIndex());
+        applyShellTitle(selectedSection);
     }
 
     private void applyShellTitle(int selectedTab) {
@@ -177,8 +165,45 @@ public class AppShellForm extends Form {
 
         searchCancelButton.addActionListener(e -> {
             clearSearchState();
-            tabs.setSelectedIndex(0);
+            switchSection(SECTION_NOTES);
         });
+    }
+
+    private void switchSection(int section) {
+        if (selectedSection == section) {
+            if (section == SECTION_NOTES && uiState.isNotesStale()) {
+                loadNotes();
+            }
+            if (section == SECTION_SEARCH && uiState.isSearchStale() && uiState.hasSearchQuery()) {
+                runSearch(uiState.getLastSearchQuery(), true);
+            }
+            if (section == SECTION_SETTINGS) {
+                loadSettings();
+            }
+            return;
+        }
+
+        selectedSection = section;
+        contentHost.removeAll();
+        if (section == SECTION_NOTES) {
+            contentHost.add(BorderLayout.CENTER, notesView);
+        } else if (section == SECTION_SEARCH) {
+            contentHost.add(BorderLayout.CENTER, searchView);
+        } else {
+            contentHost.add(BorderLayout.CENTER, settingsView);
+        }
+        applyShellTitle(section);
+        contentHost.revalidate();
+
+        if (section == SECTION_NOTES && uiState.isNotesStale()) {
+            loadNotes();
+        }
+        if (section == SECTION_SEARCH && uiState.isSearchStale() && uiState.hasSearchQuery()) {
+            runSearch(uiState.getLastSearchQuery(), true);
+        }
+        if (section == SECTION_SETTINGS) {
+            loadSettings();
+        }
     }
 
     private Container buildNotesTab() {
@@ -249,8 +274,8 @@ public class AppShellForm extends Form {
     private void activateSearch(String query, boolean switchToSearchTab) {
         syncSearchFieldText(searchField, query);
         updateSearchCancelButton();
-        if (switchToSearchTab && tabs.getSelectedIndex() != 1) {
-            tabs.setSelectedIndex(1);
+        if (switchToSearchTab && selectedSection != SECTION_SEARCH) {
+            switchSection(SECTION_SEARCH);
         }
         scheduleSearch(query);
     }
@@ -547,7 +572,7 @@ public class AppShellForm extends Form {
         }
         currentNotes.add(0, new NoteSummary(note.getId(), note.getTitle(), "Just now"));
         uiState.markNotesRefreshed();
-        if (tabs.getSelectedIndex() == 0) {
+        if (selectedSection == SECTION_NOTES) {
             renderNotesList();
         }
     }
@@ -557,7 +582,7 @@ public class AppShellForm extends Form {
         if (existingIndex >= 0) {
             currentNotes.remove(existingIndex);
             uiState.markNotesRefreshed();
-            if (tabs.getSelectedIndex() == 0) {
+            if (selectedSection == SECTION_NOTES) {
                 renderNotesList();
             }
         }

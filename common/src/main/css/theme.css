@@ -128,10 +128,6 @@ PopupCommand.pressed {
     border: none;
 }
 
-NotebookTabs {
-    background-color: #ffffff;
-}
-
 NotebookTab {
     background-color: #eceef2;
     padding: 2mm;
@@ -199,6 +195,8 @@ NoteEditorScreen {
 
 DetailTitleLabel {
     color: #111827;
+    background-color: #eceef2;
+    border: none;
     font-family: "native:MainLight";
     font-size: 7mm;
     margin: 1.2mm 1.2mm 0.7mm 1.2mm;
@@ -206,10 +204,10 @@ DetailTitleLabel {
 
 NotebookEditorTextArea {
     color: #111827;
-    background-color: #eceef2;
-    border: none;
-    padding: 0 1.2mm;
-    margin: 0;
+    background-color: #ffffff;
+    border: 1px solid #d1d5db;
+    padding: 1.2mm;
+    margin: 0 1.2mm 1.2mm 1.2mm;
     font-size: 4.2mm;
 }
 
