@@ -2,14 +2,18 @@ package com.teggr.notebook.ui;
 
 import static com.codename1.ui.CN.callSerially;
 
+import com.codename1.components.InfiniteProgress;
 import com.codename1.components.ToastBar;
 import com.codename1.ui.Display;
 import com.codename1.ui.Button;
 import com.codename1.ui.Dialog;
 import com.codename1.ui.FontImage;
 import com.codename1.ui.Form;
+import com.codename1.ui.Label;
 import com.codename1.ui.TextArea;
+import com.codename1.ui.Container;
 import com.codename1.ui.layouts.BorderLayout;
+import com.codename1.ui.layouts.BoxLayout;
 import com.teggr.notebook.model.NoteDetail;
 import com.teggr.notebook.service.NotebookApiClient;
 
@@ -24,23 +28,30 @@ public class NoteEditorForm extends Form {
     private final SaveListener saveListener;
     private final String noteId;
     private final TextArea contentArea;
+    private final Label titleLabel;
 
     private boolean dirty;
     private boolean loading;
     private boolean saving;
 
     public NoteEditorForm(Form backForm, NotebookApiClient api, String noteId, SaveListener saveListener) {
-        super(noteId == null ? "New" : "Edit", new BorderLayout());
+        super(noteId == null ? "New Note" : "All Notes", new BorderLayout());
         this.api = api;
         this.noteId = noteId;
         this.saveListener = saveListener;
-        getToolbar().setTitleCentered(false);
+        getToolbar().setTitleCentered(true);
+
+        titleLabel = new Label(noteId == null ? "Untitled" : "Loading...");
+        titleLabel.setUIID("DetailTitleLabel");
 
         contentArea = new TextArea();
         contentArea.setRows(20);
         contentArea.setGrowByContent(true);
         contentArea.setUIID("NotebookEditorTextArea");
-        contentArea.addDataChangedListener((type, index) -> dirty = true);
+        contentArea.addDataChangedListener((type, index) -> {
+            dirty = true;
+            refreshTitleFromContent();
+        });
         contentArea.addPointerPressedListener(e -> {
             if (contentArea.isEditable()) {
                 contentArea.requestFocus();
@@ -48,9 +59,13 @@ public class NoteEditorForm extends Form {
             }
         });
 
-        add(BorderLayout.CENTER, contentArea);
+        Container content = BoxLayout.encloseY(titleLabel, contentArea);
+        content.setUIID("NoteEditorScreen");
+        content.setScrollableY(true);
 
-        getToolbar().setBackCommand("Back", e -> {
+        add(BorderLayout.CENTER, content);
+
+        getToolbar().setBackCommand("", e -> {
             if (dirty) {
                 boolean discard = Dialog.show("Discard changes?", "You have unsaved changes.", "Discard", "Cancel");
                 if (!discard) {
@@ -67,6 +82,7 @@ public class NoteEditorForm extends Form {
 
         if (noteId == null) {
             contentArea.setText("# Untitled\n\n");
+            refreshTitleFromContent();
             dirty = false;
             Display.getInstance().callSerially(() -> focusEditor(contentArea));
         } else {
@@ -86,6 +102,7 @@ public class NoteEditorForm extends Form {
                 callSerially(() -> {
                     field.setText(note.getContent());
                     field.setEditable(true);
+                    refreshTitleFromContent();
                     focusEditor(field);
                     dirty = false;
                     loading = false;
@@ -190,5 +207,34 @@ public class NoteEditorForm extends Form {
         }
         field.requestFocus();
         field.startEditingAsync();
+    }
+
+    private void refreshTitleFromContent() {
+        titleLabel.setText(extractTitle(contentArea.getText()));
+        titleLabel.getParent().revalidate();
+    }
+
+    private static String extractTitle(String content) {
+        if (content == null) {
+            return "Untitled";
+        }
+        String text = content.trim();
+        if (text.length() == 0) {
+            return "Untitled";
+        }
+
+        String[] lines = text.split("\\n");
+        for (String line : lines) {
+            String trimmed = line == null ? "" : line.trim();
+            if (trimmed.length() == 0) {
+                continue;
+            }
+            if (trimmed.startsWith("#")) {
+                String withoutHeading = trimmed.replaceFirst("^#+\\s*", "").trim();
+                return withoutHeading.length() == 0 ? "Untitled" : withoutHeading;
+            }
+            return trimmed;
+        }
+        return "Untitled";
     }
 }

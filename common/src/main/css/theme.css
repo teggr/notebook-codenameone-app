@@ -5,276 +5,325 @@
     useLargerTextScaleBool: true;
 }
 
-/** Style for Button class */
 Button {
     font-family: "native:MainLight";
-    font-size: 3mm;
+    font-size: 3.2mm;
 }
 
-/** Style for App Title Bar Text */
 Title {
     font-family: "native:MainLight";
-    font-size: 6mm;
+    font-size: 4.2mm;
 }
 
-/** Style for Dialog body */
 DialogBody {
     font-family: "native:MainLight";
     font-size: 2.8mm;
 }
 
-/** Style for Dialog title bar text */
 DialogTitle {
     font-family: "native:MainLight";
-    font-size: 4.5mm;
+    font-size: 4mm;
 }
 
-/** Style for the side menu */
 SideNavigationPanel {
-    background: white;
+    background: #ffffff;
     padding: 2mm 1mm 1mm 1mm;
 }
 
 @media platform-ios {
-    /** iOS Only styles for side menu. */
     SideNavigationPanel {
-        /** Extra top padding to deal with notch on iPhoneX */
         padding: 6mm 1mm 1mm 1mm;
     }
 }
 
-/** Style for commands in side menu. */
 SideCommand {
-    padding: 1mm;
+    padding: 1.2mm;
     border: none;
     text-decoration: none;
-    color: black;
+    color: #111827;
     font-family: "native:MainLight";
-    font-size: 4mm;
-    border-bottom: 2px solid #cccccc;
+    font-size: 3.4mm;
+    border-bottom: 1px solid #e5e7eb;
 }
 
-/* Dark mode example - uncomment to override styles when the
- * device is in dark mode:
- *
- * @media (prefers-color-scheme: dark) {
- *     SideNavigationPanel {
- *         background: #0f172a;
- *     }
- *     SideCommand {
- *         color: #e2e8f0;
- *         background: #0f172a;
- *         border-bottom: 2px solid #334155;
- *     }
- * }
- */
-
-
-/* Initializr Theme Overrides */
 Form {
-    background-color: #0f172a;
-    color: #e2e8f0;
+    background-color: #eceef2;
+    color: #111827;
 }
+
 Toolbar {
-    background-color: #0f172a;
+    background-color: #eceef2;
     border: none;
 }
-Title, Command {
-    color: #f8fafc;
+
+Title,
+Command {
+    color: #111827;
 }
-TitleCommand {
-    color: #38bdf8;
-    background-color: transparent;
-    border: none;
-    margin: 0;
-    padding: 0.5mm;
-}
-TitleCommand.pressed {
-    color: #7dd3fc;
-    background-color: #1e293b;
-    border: none;
-}
-/* Overflow toolbar trigger button keeps native shape reset and icon-only look */
+
+TitleCommand,
 OverflowButton {
-    color: #38bdf8;
+    color: #1d4ed8;
     background-color: transparent;
     border: none;
     margin: 0;
-    padding: 0.5mm;
+    padding: 0.6mm;
 }
+
+TitleCommand.pressed,
 OverflowButton.pressed {
-    color: #7dd3fc;
-    background-color: #1e293b;
+    color: #1e40af;
+    background-color: #e5e7eb;
     border: none;
 }
+
 Title {
     background-color: transparent;
     border: none;
     margin: 0;
     padding: 0 1mm;
 }
-DialogBody, DialogTitle {
-    color: #e2e8f0;
-}
+
 Dialog {
-    background-color: #0b1220;
-    color: #e2e8f0;
-    border: 1px solid #334155;
-}
-DialogCommand {
-    color: #f8fafc;
-    background-color: #1f2937;
-    border: 1px solid #475569;
-}
-DialogCommand.pressed {
-    color: #f8fafc;
-    background-color: #334155;
-    border: 1px solid #64748b;
+    background-color: #ffffff;
+    color: #111827;
+    border: 1px solid #d1d5db;
 }
 
-/* Keep overflow and popup menus legible regardless of native theme background */
-PopupContent {
-    background-color: #0b1220;
-    border: 1px solid #334155;
+DialogBody,
+DialogTitle {
+    color: #111827;
 }
-OverflowCommand {
-    color: #f8fafc;
-    background-color: #0b1220;
+
+DialogCommand {
+    color: #1d4ed8;
+    background-color: transparent;
+    border: none;
+}
+
+DialogCommand.pressed {
+    color: #1e40af;
+    background-color: #e5e7eb;
+    border: none;
+}
+
+PopupContent {
+    background-color: #ffffff;
+    border: 1px solid #d1d5db;
+}
+
+OverflowCommand,
+PopupCommand {
+    color: #111827;
+    background-color: #ffffff;
     border: none;
     text-decoration: none;
-    padding: 1.5mm;
+    padding: 1.3mm;
 }
-OverflowCommand.pressed {
-    color: #f8fafc;
-    background-color: #1e293b;
-    border: none;
-}
-PopupCommand {
-    color: #f8fafc;
-    background-color: #0b1220;
-    border: none;
-    padding: 1.5mm;
-}
+
+OverflowCommand.pressed,
 PopupCommand.pressed {
-    color: #f8fafc;
-    background-color: #1e293b;
+    color: #111827;
+    background-color: #f3f4f6;
+    border: none;
 }
-Button {
-    color: #e2e8f0;
-    background-color: #1f2937;
-    border: 1px solid #475569;
-}
-Button.pressed {
-    color: #e2e8f0;
-    background-color: #334155;
-    border: 1px solid #64748b;
+
+NotebookTabs {
+    background-color: #ffffff;
 }
 
 NotebookTab {
+    background-color: #eceef2;
     padding: 2mm;
 }
 
 NotebookSection {
-    margin: 1mm 0 0 0;
+    margin: 0;
+    background-color: transparent;
+    border: none;
 }
 
-NotebookActionRow {
-    margin: 0 0 2mm 0;
+NotebookSearchRow {
+    margin: 0 0 1.4mm 0;
+    padding: 0;
+}
+
+SearchFieldShell {
+    background-color: #dfe2e8;
+    border: none;
+    padding: 0.2mm 1.2mm;
+}
+
+SearchIcon {
+    color: #8b909a;
+    background-color: transparent;
+    border: none;
+    margin: 0 0.8mm 0 0.2mm;
+    padding: 0;
+}
+
+NotebookSearchField {
+    color: #6b7280;
+    background-color: transparent;
+    border: none;
+    padding: 1.6mm 0.8mm;
+    margin: 0;
 }
 
 NotebookTextField {
-    color: #e2e8f0;
-    background-color: #111827;
-    border: 1px solid #334155;
-    padding: 1.5mm;
-    margin: 0 0 1.5mm 0;
+    color: #111827;
+    background-color: #ffffff;
+    border: 1px solid #d1d5db;
+    padding: 1.4mm;
+    margin: 0 0 1.4mm 0;
+}
+
+SearchCancelButton {
+    color: #1d4ed8;
+    background-color: transparent;
+    border: none;
+    margin: 0 0 0 1.2mm;
+    padding: 1mm;
+}
+
+SearchCancelButton.pressed {
+    color: #1e40af;
+    background-color: #e5e7eb;
+    border: none;
+}
+
+NoteEditorScreen {
+    background-color: #eceef2;
+    padding: 1mm 0 2mm 0;
+}
+
+DetailTitleLabel {
+    color: #111827;
+    font-family: "native:MainLight";
+    font-size: 7mm;
+    margin: 1.2mm 1.2mm 0.7mm 1.2mm;
 }
 
 NotebookEditorTextArea {
-    color: #f8fafc;
-    background-color: #111827;
-    border: 1px solid #334155;
-    padding: 2mm;
-    margin: 1mm;
+    color: #111827;
+    background-color: #eceef2;
+    border: none;
+    padding: 0 1.2mm;
+    margin: 0;
+    font-size: 4.2mm;
 }
 
 PrimaryActionButton {
-    color: #f8fafc;
-    background-color: #0ea5e9;
-    border: 1px solid #38bdf8;
+    color: #ffffff;
+    background-color: #2563eb;
+    border: none;
 }
 
 PrimaryActionButton.pressed {
-    color: #f8fafc;
-    background-color: #0284c7;
-    border: 1px solid #38bdf8;
+    color: #ffffff;
+    background-color: #1d4ed8;
+    border: none;
 }
 
 SecondaryActionButton {
-    color: #e2e8f0;
-    background-color: #1f2937;
-    border: 1px solid #475569;
+    color: #374151;
+    background-color: #e5e7eb;
+    border: none;
 }
 
 SecondaryActionButton.pressed {
-    color: #e2e8f0;
-    background-color: #334155;
-    border: 1px solid #64748b;
+    color: #1f2937;
+    background-color: #d1d5db;
+    border: none;
 }
 
 FieldLabel {
-    color: #cbd5e1;
+    color: #4b5563;
     font-family: "native:MainLight";
-    font-size: 2.8mm;
-    margin: 1mm 0 0.5mm 0;
+    font-size: 2.7mm;
+    margin: 1mm 0 0.4mm 0;
 }
 
-NoteRowButton {
-    color: #e2e8f0;
-    background-color: #111827;
-    border: 1px solid #334155;
+ListRowWrap {
+    background-color: #eceef2;
+    margin: 0;
+    padding: 0;
+    border: none;
     text-decoration: none;
-    margin: 0 0 1mm 0;
-    padding: 1.6mm;
 }
 
-NoteRowButton.pressed {
-    color: #e2e8f0;
-    background-color: #1e293b;
-    border: 1px solid #475569;
-}
-
-SearchRowButton {
-    color: #e2e8f0;
-    background-color: #0b1220;
-    border: 1px solid #2e3f57;
+ListRow {
+    background-color: transparent;
+    border: none;
+    margin: 0;
+    padding: 1.3mm 0.2mm 1mm 0.2mm;
     text-decoration: none;
-    margin: 0 0 1mm 0;
-    padding: 1.6mm;
 }
 
-SearchRowButton.pressed {
-    color: #e2e8f0;
-    background-color: #1a2637;
-    border: 1px solid #3b556f;
+ListRowText {
+    background-color: transparent;
+    border: none;
+    margin: 0;
+    padding: 0;
+    text-decoration: none;
+}
+
+ListRowTitle {
+    color: #111827;
+    font-family: "native:MainLight";
+    font-size: 5mm;
+    margin: 0;
+    background-color: transparent;
+    border: none;
+    text-decoration: none;
+}
+
+ListRowSubtitle {
+    color: #6b7280;
+    font-family: "native:MainLight";
+    font-size: 4.2mm;
+    margin: 0.3mm 0 0 0;
+    background-color: transparent;
+    border: none;
+    text-decoration: none;
+}
+
+RowChevron {
+    color: #a6acb8;
+    font-family: "native:MainLight";
+    font-size: 5.2mm;
+    background-color: transparent;
+    border: none;
+    margin: 0 0.2mm 0 1.1mm;
+    padding: 0;
+    text-decoration: none;
+}
+
+RowSeparator {
+    background-color: #d7dae1;
+    color: #d7dae1;
+    border: none;
+    margin: 0 0 0.3mm 0;
+    padding: 0.2mm 0 0 0;
+    text-decoration: none;
 }
 
 StatusInfo {
-    color: #93c5fd;
-    margin: 1mm 0;
+    color: #6b7280;
+    margin: 0.8mm 0;
 }
 
 StatusSuccess {
-    color: #4ade80;
-    margin: 1mm 0;
+    color: #047857;
+    margin: 0.8mm 0;
 }
 
 StatusError {
-    color: #fda4af;
-    margin: 1mm 0;
+    color: #b91c1c;
+    margin: 0.8mm 0;
 }
 
 StatusWarning {
-    color: #fcd34d;
-    margin: 1mm 0;
+    color: #b45309;
+    margin: 0.8mm 0;
 }
