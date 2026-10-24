@@ -144,7 +144,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v6.1.0
         with: { distribution: 'temurin', java-version: '17' }
       - name: Run CN1 tests under a virtual framebuffer
         run: xvfb-run -a ./mvnw -pl common test-compile cn1:test
